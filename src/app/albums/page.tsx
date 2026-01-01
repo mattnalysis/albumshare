@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
+export const dynamic = "force-dynamic";
 
 type AlbumRow = {
   id: number; // your screenshot shows int8
