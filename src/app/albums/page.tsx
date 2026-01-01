@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { likeAlbum, unlikeAlbum } from "./actions";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ type AlbumRow = {
   album: string | null;
   artist: string | null;
   release_date: string | null;
+  cover_url: string | null;
 };
 
 export default async function AlbumsPage() {
@@ -21,7 +23,7 @@ export default async function AlbumsPage() {
 
   const { data, error } = await supabaseServer
     .from("albums")
-    .select("id, album, artist, release_date")
+    .select("id, album, artist, release_date, cover_url")
     .order("release_date", { ascending: false });
 
   if (error) {
@@ -91,18 +93,30 @@ if (user) {
 
       <ul className="space-y-3">
         {albums.map((a) => (
-  <li
+ <li
   key={a.id}
   className="border rounded-xl p-3 flex items-start justify-between gap-3"
 >
-  <div>
-    <div className="font-medium">{a.album ?? "Untitled album"}</div>
-    <div className="text-sm text-gray-600">{a.artist ?? "Unknown artist"}</div>
-    <div className="text-xs text-gray-500">
-      {a.release_date ?? "Unknown release date"}
+  {/* LEFT SIDE: thumbnail + text */}
+  <div className="flex items-start gap-3">
+    <Image
+      src={a.cover_url || "/no_cover_art.png"}
+      alt={`${a.album ?? "Album"} cover`}
+      width={56}
+      height={56}
+      className="rounded-md bg-neutral-200"
+    />
+
+    <div>
+      <div className="font-medium">{a.album ?? "Untitled album"}</div>
+      <div className="text-sm text-gray-600">{a.artist ?? "Unknown artist"}</div>
+      <div className="text-xs text-gray-500">
+        {a.release_date ?? "Unknown release date"}
+      </div>
     </div>
   </div>
 
+  {/* RIGHT SIDE: likes + actions */}
   <div className="flex flex-col items-end gap-2">
     <div className="text-xs text-gray-500">{likeCounts.get(a.id) ?? 0} ♥</div>
 
@@ -127,6 +141,7 @@ if (user) {
     )}
   </div>
 </li>
+
 
         ))}
       </ul>
