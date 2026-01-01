@@ -1,5 +1,8 @@
-import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 export const dynamic = "force-dynamic";
+
+
 
 type AlbumRow = {
   id: number; // your screenshot shows int8
@@ -9,7 +12,12 @@ type AlbumRow = {
 };
 
 export default async function AlbumsPage() {
-  const { data, error } = await supabase
+  const supabaseServer = await createSupabaseServerClient();
+
+  const { data: userData } = await supabaseServer.auth.getUser();
+  const user = userData.user;
+
+  const { data, error } = await supabaseServer
     .from("albums")
     .select("id, album, artist, release_date")
     .order("release_date", { ascending: false });
@@ -27,6 +35,26 @@ export default async function AlbumsPage() {
 
   return (
     <main className="p-4 max-w-xl mx-auto">
+	
+    <header className="flex items-center justify-between mb-4">
+      <div className="text-sm text-gray-600">
+        {user ? `Signed in as ${user.email}` : "Not signed in"}
+      </div>
+	{user ? (
+ 	 <form action="/auth/signout" method="post">
+	    <button type="submit" className="text-sm underline">
+	      Sign out
+	    </button>
+	  </form>
+	) : (
+	  <Link href="/login" className="text-sm underline">
+	    Sign in
+	  </Link>
+	)}
+
+    	
+    </header>
+
       <h1 className="text-2xl font-semibold mb-4">New Albums</h1>
 
       <ul className="space-y-3">
